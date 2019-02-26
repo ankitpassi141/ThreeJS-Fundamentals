@@ -1,89 +1,160 @@
+//Creating 3JS Scene
 var scene = new THREE.Scene();
-// scene = new THREE.Scene();
-scene.background = new THREE.Color( 0xcce0ff );
-scene.fog = new THREE.Fog( 0xcce0ff, 500, 10000 );
 
-// var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
-var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
-// camera.position.set( 1000, 50, 1500 );
+//Adding a Camera
+var camera = new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,1, 10000);
+var controls = new THREE.OrbitControls( camera );
+controls.enableZoom = true;
+controls.enablePan = true;
+controls.minPolarAngle = Math.PI / 4;
+controls.maxPolarAngle = Math.PI / 1.5;
+camera.position.set( 0, 20, 100 );
+controls.update();
 
+
+//Adding a Renderer to Render Scene
 var renderer = new THREE.WebGLRenderer();
-renderer.setSize( window.innerWidth, window.innerHeight );
-document.body.appendChild( renderer.domElement );
-
-scene.add( new THREE.AmbientLight( 0x24454c ) );
-var light = new THREE.DirectionalLight( 0xdfebff, 1 );
-light.position.set( 50, 200, 100 );
-light.position.multiplyScalar( 1.3 );
-light.castShadow = true;
-light.shadow.mapSize.width = 1024;
-light.shadow.mapSize.height = 1024;
-var d = 300;
-light.shadow.camera.left = - d;
-light.shadow.camera.right = d;
-light.shadow.camera.top = d;
-light.shadow.camera.bottom = - d;
-light.shadow.camera.far = 1000;
-scene.add( light );
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
 
+//Skybox : Cube Version
+var materialArray = [   '../models/textures/Yokohama3/posx.jpg', '../models/textures/Yokohama3/negx.jpg',
+                        '../models/textures/Yokohama3/posy.jpg', '../models/textures/Yokohama3/negy.jpg',
+                        '../models/textures/Yokohama3/posz.jpg', '../models/textures/Yokohama3/negz.jpg'
+                    ];
+
+for (var i = 0; i < 6; i++)
+{
+    materialArray[i].side = THREE.BackSide;
+}
+
+var reflectionCube = new THREE.CubeTextureLoader().load( materialArray );
+reflectionCube.format = THREE.RGBFormat;
+var refractionCube = new THREE.CubeTextureLoader().load( materialArray );
+refractionCube.mapping = THREE.CubeRefractionMapping;
+refractionCube.format = THREE.RGBFormat;
+scene.background = reflectionCube;
 
 
-// var geometry1 = new THREE.BoxGeometry( 10, 0.125, 1 );
-// var material1 = new THREE.MeshBasicMaterial(0xe5e5e5,1);
-// var cube1 = new THREE.Mesh( geometry1, material1 );
-// cube1.position.setY(-2.5);
-// cube1.castShadow = true;
-// cube1.receiveShadow = true;
-// scene.add( cube1);
 
+//Adding Geometry, Material, Mesh and Adding it to scene
+var cubeGeometry = new THREE.BoxGeometry(70,70,70,70,70,70);
+var cubeMaterial = new THREE.MeshBasicMaterial({color: 0xffffff, envMap: scene.background});
+var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+cube.position.x = 100;
+cube.position.y=-25;
+cube.castShadow=true;
+// cube.shadow.mapSize.height=1024;
+scene.add(cube);
 
-var loader = new THREE.TextureLoader();
-
-var geometry = new THREE.BoxGeometry( 1,1,1 );
-var material = new THREE.MeshNormalMaterial();
-var cube = new THREE.Mesh( geometry, material );
-cube.castShadow = true;
-cube.receiveShadow = true;
-scene.add( cube);
-// var GeometryLoader = new THREE.JsonLoader();
-
-// GeometryLoader.load("../models/monkeyData.js");
-// monkey = new Three.Mesh();
-// scene.add(monkey);
-// var groundTexture = loader.load( 'https://images.pexels.com/photos/413195/pexels-photo-413195.jpeg' );
-// groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
-// groundTexture.repeat.set( 25, 25 );
-// groundTexture.anisotropy = 16;
-// var groundMaterial = new THREE.MeshLambertMaterial( { map: groundTexture } );
-// var mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 20000, 20000 ), groundMaterial );
-// mesh.position.y = - 250;
-// mesh.rotation.x = - Math.PI / 2;
-// mesh.receiveShadow = true;
-// scene.add( mesh );
-
-camera.position.z = 5;
+var ringGeometry = new THREE.SphereGeometry(50,30,30);
+var ring = new THREE.Mesh(ringGeometry, cubeMaterial);
+ring.position.x = -100;
+ring.castShadow=true;
+scene.add(ring);
 
 var loader = new THREE.GLTFLoader();
-loader.load(
-   "../models/monkeyModel.gltf",
-   function ( gltf ) 
-   {
-       scene.add( gltf.scene );
-       gltf.scene;
-   },
-);
-scene.add( bus.frame )
+loader.load( '../models/meshes/monkeyModel.glb', function ( gltf ) {
+    
+    scene.add( gltf.scene );
+    gltf.animations; // Array<THREE.AnimationClip>
+    gltf.scene; // THREE.Scene
+    gltf.scenes; // Array<THREE.Scene>
+    gltf.cameras; // Array<THREE.Camera>
+    gltf.asset; // Object
+
+    gltf.scene.traverse(function(child){
+        if(child.isMesh){
+            child.material.envMap = scene.background;
+        }
+    });
+
+    frontObject = gltf.scene;
+    frontObject.scale.set(10,10,10);
+    cubeRotation(frontObject);
+
+}, undefined, function ( error ) {
+	console.error( error );
+} );
 
 
-var animate = function () 
+
+//Adding Light
+var light = new THREE.PointLight(0xFFFF00);
+light.castShadow = true;
+light.shadow.mapSize.width = 2048;
+light.shadow.mapSize.height = 2048;
+var ambientLight = new THREE.AmbientLight({color: 0x404040},0.2);
+light.position.set(10,0,25);
+scene.add(light);
+scene.add(ambientLight);
+
+hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
+hemiLight.color.setHSL( 0.6, 1, 0.6 );
+hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
+hemiLight.position.set( 0, 50, 0 );
+scene.add( hemiLight );
+
+dirLight = new THREE.DirectionalLight( 0xffffff, 0.2 );
+dirLight.color.setHSL( 0.1, 1, 0.95 );
+dirLight.position.set( - 1, 1.75, 1 );
+dirLight.position.multiplyScalar( 30 );
+scene.add( dirLight );
+dirLight.castShadow = true;
+dirLight.shadow.mapSize.width = 2048;
+dirLight.shadow.mapSize.height = 2048;
+var d = 50;
+dirLight.shadow.camera.left = - d;
+dirLight.shadow.camera.right = d;
+dirLight.shadow.camera.top = d;
+dirLight.shadow.camera.bottom = - d;
+dirLight.shadow.camera.far = 3500;
+dirLight.shadow.bias = - 0.0001;
+
+
+
+//Skybox : Sphere
+// var skyGeo = new THREE.SphereGeometry(100000, 25, 25); 
+// var loader  = new THREE.TextureLoader(), texture = loader.load( "../models/textures/skySphere.jpg" );
+// var material = new THREE.MeshPhongMaterial({ map: texture, });
+// var sky = new THREE.Mesh(skyGeo, material);
+// sky.material.side = THREE.BackSide;
+// scene.add(sky);
+var texture = new THREE.TextureLoader().load( '../models/textures/dirt2.jpg', function (texture) {
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    texture.offset.set( 0, 0 );
+    texture.repeat.set( 128 , 128 );    
+} );
+
+// var groundGeo = new THREE.PlaneBufferGeometry( 1000, 1000 );
+// var groundMat = new THREE.MeshLambertMaterial( { color: 0xffffff,  } );
+// var material = new THREE.MeshBasicMaterial( { map: texture, specular: 0x111111, shininess: 10 } );
+// groundMat.color.setHSL( 0.095, 1, 0.75 );
+// var ground = new THREE.Mesh( groundGeo, material );
+// ground.position.y = - 33;
+// ground.rotation.x = - Math.PI / 2;
+// ground.receiveShadow = true;
+// scene.add( ground );
+
+
+//Function which rotates a mesh
+function cubeRotation(genericGeometry)
 {
-    requestAnimationFrame( animate );
-    cube.rotation.x += 0.05;
-    cube.rotation.y += 0.01;
+    genericGeometry.rotation.x += 0.05;
+    genericGeometry.rotation.y += 0.05;
+}
 
-    renderer.render( scene, camera );
+
+//Renderer Function which callsback and render the entire scene with Scene and camera as parameter.
+//All Function that manipulates mesh are called inside this render function
+//It is called every frame
+var render = function ()
+{
+    cubeRotation(cube);
+    cubeRotation(ring);
+    requestAnimationFrame(render);
+    controls.update();
+    renderer.render(scene, camera);
 };
-
-animate();
-
+render();
