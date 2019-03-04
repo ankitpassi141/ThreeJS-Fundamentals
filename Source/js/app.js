@@ -55,7 +55,7 @@ ring.castShadow=true;
 scene.add(ring);
 
 var loader = new THREE.GLTFLoader();
-loader.load( '../models/meshes/monkeyModel.glb', function ( gltf ) {
+loader.load( '../models/meshes/monkeyModel.gltf', function ( gltf ) {
     
     scene.add( gltf.scene );
     gltf.animations; // Array<THREE.AnimationClip>
