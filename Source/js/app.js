@@ -19,9 +19,9 @@ document.body.appendChild(renderer.domElement);
 
 
 //Skybox : Cube Version
-var materialArray = [   '../models/textures/Yokohama3/posx.jpg', '../models/textures/Yokohama3/negx.jpg',
-                        '../models/textures/Yokohama3/posy.jpg', '../models/textures/Yokohama3/negy.jpg',
-                        '../models/textures/Yokohama3/posz.jpg', '../models/textures/Yokohama3/negz.jpg'
+var materialArray = [   '../models/textures/FootballField/posx.jpg', '../models/textures/FootballField/negx.jpg',
+                        '../models/textures/FootballField/posy.jpg', '../models/textures/FootballField/negy.jpg',
+                        '../models/textures/FootballField/posz.jpg', '../models/textures/FootballField/negz.jpg'
                     ];
 
 for (var i = 0; i < 6; i++)
