@@ -11,11 +11,17 @@
 </head>
 <body>
 
-    <button onclick="changePage()" style="display: flex;">Prev Scene</button>
+    <button onclick="prevPage()" style="display: flex;">Prev Scene</button>
+    <button onclick="nextPage()" style="display: flex;">Next Scene</button>
     <script>
-        function changePage()
+        function prevPage()
         {
             window.location.href = "/index.html";
+        }
+
+        function nextPage()
+        {
+            window.location.href = "/clothSimulation.html";
         }
     </script>
     <!-- <script src="//cdn.rawgit.com/mrdoob/three.js/master/build/three.min.js"></script> -->
